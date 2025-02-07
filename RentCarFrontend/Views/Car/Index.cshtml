@@ -1,0 +1,197 @@
+@{
+  ViewData["Title"] = "Car Detail";
+}
+
+<div class="car-detail-container">
+    <h1>Sewa Mobil</h1>
+    
+    <!-- Image Carousel -->
+    <div class="carousel">
+        <button class="prev" onclick="prevImage()">Prev</button>
+        <img id="carImage" src="https://placehold.co/600x400" alt="Car Image">
+        <button class="next" onclick="nextImage()">Next</button>
+    </div>
+
+    <!-- Car Information Table -->
+    <div class="car-info">
+        <h2>Informasi Mobil</h2>
+        <table>
+            <tr>
+                <td>Tipe Mobil</td>
+                <td>@ViewData["CarModel"]</td>
+            </tr>
+            <tr>
+                <td>Nama Mobil</td>
+                <td>@ViewData["CarName"]</td>
+            </tr>
+            <tr>
+                <td>Transmisi</td>
+                <td>@ViewData["CarTransmission"]</td>
+            </tr>
+            <tr>
+                <td>Jumlah Penumpang</td>
+                <td>@ViewData["CarNumberOfCarSeats"]</td>
+            </tr>
+            <tr>
+                <td>Nama Penyewa</td>
+                <td id="nama-penyewa"></td>
+            </tr>
+            <tr>
+                <td>Tanggal Sewa</td>
+                <td>@ViewData["pickUpDate"] sampai @ViewData["returnDate"]</td>
+            </tr>
+            <tr>
+                <td>Harga Sewa</td>
+                <td>@ViewData["CarPricePerDay"] / hari</td>
+            </tr>
+            <tr>
+                <td>Total Harga Sewa</td>
+                <td>@ViewData["totalPrice"]</td>
+            </tr>
+        </table>
+        <button class="rent-btn" id="rent-btn-id">Sewa</button>
+    </div>
+</div>
+
+@section Scripts 
+{
+    <script>
+        $(document).ready(async function() {
+            $("#nama-penyewa").html(localStorage.getItem("custName"));
+
+            let app = {};
+
+            app.getReq = function (url, param) {
+            return new Promise(function (resolve, reject) {
+                    $.ajax({
+                        type: "GET",
+                        url: url,
+                        data: param,
+                        success: function (response) {
+                            resolve(response);
+                        },
+                        error: function (error) {
+                            reject(error);
+                        },
+                        contentType: "application/json"
+                    })
+                });
+            }
+
+            app.postReq = function (url, param) {
+                return new Promise(function (resolve, reject) {
+                    $.ajax({
+                        type: "POST",
+                        url: url,
+                        data: JSON.stringify(param),
+                        success: function (response) {
+                            console.log("POST initiaded");
+                            resolve(response);
+                        },
+                        error: function (error) {
+                            reject(error);
+                        },
+                        contentType: "application/json; charset=UTF-8"
+                    });
+                });
+            }
+
+            // Get the query parameter value
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            
+            const carId = params.get('carId');
+            const rawPickUpDate = params.get('pickUpDate');
+            const rawReturnDate = params.get('returnDate');
+
+            // Change the date format
+            const pickUpDate = new Date(rawPickUpDate);
+            const returnDate = new Date(rawReturnDate);
+            const totalDays = (returnDate - pickUpDate) / (1000 * 60 * 60 * 24);
+
+            pickUpDate.setUTCHours(0, 0, 0, 0);
+            returnDate.setUTCHours(0, 0, 0, 0);
+
+            const pickUpDateISO = pickUpDate.toISOString();
+            const returnDateISO = returnDate.toISOString();
+
+            // Helper function 
+            function padZero(num) {
+                return num < 10 ? '0' + num : num;
+            }
+
+            async function getAllRentalID() {
+                try {
+                    let allRentalID = await app.getReq("/Rental/GetAllRentalID");
+                    if (allRentalID) return allRentalID;
+                } catch (error) {
+                    alert (error);
+                    return false;
+                }
+            }
+
+            // Helper function
+            function generateRentalID() {
+                var id = "RTD";
+                for (var i = 0; i < 3; i++) {
+                    id += Math.floor(Math.random() * 10);
+                }
+                return id;
+            }
+            
+            async function getCarDetail(carID) {
+                let params = {
+                    carID: carId
+                }
+                try {
+                    let carDetail = await app.getReq("/Car/GetCarDetail", params);
+                    if (carDetail) return carDetail;
+                } catch (error) {
+                    alert (error);
+                    return false;
+                }
+            }
+
+            // New rental event                        
+            let checkRentalID = await getAllRentalID();
+            let carDetailResponse = await getCarDetail(carId);
+            let carDetailResult = carDetailResponse.payload;
+            $("#rent-btn-id").click(async function() {
+                // Generate unique ID
+                let generatedId;
+                while (true) {
+                    generatedId = generateRentalID();
+                    if (checkRentalID.includes(generatedId)) {
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+
+                let randomPayment = Math.random() >= 0.5;
+                let customerID = localStorage.getItem("custID");
+
+                let url = "/Rental/CreateRent";
+                let param = {
+                    rentalID: generatedId,
+                    rentalDate: pickUpDateISO,
+                    returnDate: returnDateISO,
+                    totalPrice: carDetailResult.pricePerDay * totalDays,
+                    paymentStatus: randomPayment,
+                    customerID: customerID,
+                    carID: carId,
+                };
+                
+                try {
+                    let response = await app.postReq(url, param);
+                    console.log(response);
+                    alert("Rental created successfully!");
+                    window.location.href = "Rental/Index"
+                } catch (error) {
+                    console.error("Failed to create rental:", error);
+                    alert("Failed to create rental.");
+                }
+            });
+        });
+    </script>
+}

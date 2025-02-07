@@ -1,0 +1,209 @@
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="registration-container">
+        <h2>Registrasi ke RentCar</h2>
+        <form id="registration-form">
+            <label for="nama">Nama Lengkap</label>
+            <input type="text" id="nama" placeholder="Masukkan nama lengkap Anda">
+            <p id="nama-error-text"></p>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Masukkan email Anda">
+            <p id="email-error-text"></p>
+            
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Masukkan password Anda">
+            <p id="password-error-text"></p>
+
+            <label for="re-password">Re-Password</label>
+            <input type="password" id="re-password" placeholder="Masukkan kembali password Anda">
+            <p id="repassword-error-text"></p>
+
+            <label for="phone">Nomor Telepon</label>
+            <input type="tel" id="phone" placeholder="Masukkan nomor telepon Anda">
+            <p id="phone-error-text"></p>
+
+            <label for="address">Alamat</label>
+            <input type="text" id="address" placeholder="Masukkan alamat Anda">
+            <p id="address-error-text"></p>
+
+            <label for="driver-number-license">Nomor SIM</label>
+            <input type="text" id="driver-number-license" placeholder="Masukkan nomor SIM anda">
+            <p id="driver-license-number-error-text"></p>
+
+            <button id="create-cust-button" type="submit">Registrasi</button>
+
+            <p class="login-text">
+                Sudah punya akun? <a asp-controller="Auth" asp-action="Login">Login disini</a>
+            </p>
+        </form>
+    </div>
+
+    @section Scripts {
+        <script>
+            $(document).ready(async function() {
+                app = {};
+                
+                app.getReq = function (url, params) {
+                return new Promise(function (resolve, reject) {
+                        $.ajax({
+                            type: "GET",
+                            url: url,
+                            data: params,
+                            success: function (response) {
+                                resolve(response);
+                            },
+                            error: function (error) {
+                                reject(error);
+                            },
+                            contentType: "application/json"
+                        })
+                    });
+                }
+
+                app.postReq = function (url, params) {
+                    return new Promise(function (resolve, reject) {
+                        $.ajax({
+                            type: "POST",
+                            url: url,
+                            data: JSON.stringify(params),
+                            success: function (response) {
+                                resolve(response);
+                            },
+                            error: function (error) {
+                                reject(error);
+                            },
+                            contentType: "application/json; charset=utf-8",
+                        })
+                    });
+                }
+
+                async function getAllCustomerID() {
+                    try {
+                        let allCustomerID = await app.getReq("/Auth/GetAllCustomerID");
+                        if (allCustomerID) return allCustomerID;
+                    } catch (error) {
+                        alert (error);
+                        return false;
+                    }
+                }
+
+                function generateCustomerID() {
+                    var id = "CUS";
+                    for (var i = 0; i < 3; i++) {
+                        id += Math.floor(Math.random() * 10);
+                    }
+                    return id;
+                }
+
+                // Input Validation
+                var param = {};
+                var newCustomerId;
+                let checkCustomerID = await getAllCustomerID();
+                async function validateRequest(isValidated){
+                    errorMessages = "";
+
+                    // validateRequest
+                    const nama = $("#nama").val();
+                    const email = $("#email").val();
+                    const password = $("#password").val();
+                    const rePassword = $("#re-password").val();
+                    const phone = $("#phone").val();
+                    const address = $("#address").val();
+                    const driverLicenseNumber = $("#driver-number-license").val();
+                    
+                    $("#nama-error-text").empty();
+                    $("#email-error-text").empty();
+                    $("#password-error-text").empty();
+                    $("#repassword-error-text").empty();
+                    $("#phone-error-text").empty();
+                    $("#address-error-text").empty();
+                    $("#driver-license-number-error-text").empty();
+
+                    if (name == null || nama == ""){
+                        errorMessages = "Name cannot be empty";
+                        $("#nama-error-text").html(errorMessages).css({color: "red"});
+                    }
+
+                    if (email == null || email == ""){
+                        errorMessages = "Email cannot be empty";
+                        $("#email-error-text").html(errorMessages).css({color: "red"});
+                    }
+                    
+                    if (password == null || password == ""){
+                        errorMessages = "Password cannot be empty";
+                        $("#password-error-text").html(errorMessages).css({color: "red"});
+                    }
+                    
+                    if (rePassword == null || rePassword == ""){
+                        errorMessages = "Re-password cannot be empty";
+                        $("#repassword-error-text").html(errorMessages).css({color: "red"});
+                    }
+
+                    if (phone == null || phone == ""){
+                        errorMessages = "Phone cannot be empty";
+                        $("#phone-error-text").html(errorMessages).css({color: "red"});
+                    }
+
+                    if (address == null || address == ""){
+                        errorMessages = "Address cannot be empty";
+                        $("#address-error-text").html(errorMessages).css({color: "red"});
+                    }
+
+                    if (driverLicenseNumber == null || driverLicenseNumber == ""){
+                        errorMessages = "Driver license number cannot be empty";
+                        $("#driver-license-number-error-text").html(errorMessages).css({color: "red"});
+                    }
+
+                    let generatedId;
+                    while (true) {
+                        generatedId = generateCustomerID();
+                        if (checkCustomerID.includes(generatedId)) {
+                            continue;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if (errorMessages != ""){
+                        alert("There is an error in your request");
+                        return false
+                    }
+
+                    param = {
+                        customerID: generatedId,
+                        email: email,
+                        password: password,
+                        name: nama,
+                        phoneNumber: phone,
+                        address: address,
+                        driverLicenseNumber: driverLicenseNumber,
+                        isAuthenticated: "0"
+                    }
+                    
+                    return true
+                }
+
+                async function createCustomer(param){
+                    try {
+                        let createCustomerResponse = await app.postReq("/Auth/CreateCustomer", param);
+                    } catch (error) {
+                        alert(error);
+                        return false;
+                    }
+                }
+
+                $("#registration-form").submit(async function(event) {
+                    event.preventDefault();
+
+                    if (await validateRequest(false)) {
+                        let response = await createCustomer(param);
+                        alert("Successfuly created customer");
+                        window.location.href = "/Auth/Login";
+                    }
+                });
+            })
+        </script>
+    }

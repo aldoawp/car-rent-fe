@@ -1,0 +1,90 @@
+.car-detail-container {
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  text-align: center;
+  align-self: center;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+/* Header */
+.car-detail-container h1 {
+  color: #6d5d5d;
+  margin-bottom: 20px;
+}
+
+/* Carousel Styles */
+.car-detail-container .carousel {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.car-detail-container .carousel img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.car-detail-container .carousel button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 5px;
+}
+
+.car-detail-container .prev {
+  left: 10px;
+}
+
+.car-detail-container .next {
+  right: 10px;
+}
+
+/* Car Information Table */
+.car-detail-container .car-info {
+  background-color: #fae4ed;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.car-detail-container .car-info h2 {
+  margin-bottom: 10px;
+  color: #6d5d5d;
+}
+
+.car-detail-container table {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.car-detail-container table td {
+  padding: 8px;
+  text-align: left;
+  color: #333;
+}
+
+.car-detail-container table td:nth-child(2) {
+  text-align: right;
+}
+
+/* Rent Button */
+.car-detail-container .rent-btn {
+  background-color: #ffafaf;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.car-detail-container .rent-btn:hover {
+  background-color: #ff8f8f;
+}

@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | RentCarApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Home/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Car/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Rental/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/About/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Auth/Login.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Auth/Register.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/_Layout.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="header">
+        <div class="container-burger">
+            <span class="burger" onclick="toggleSidebar()">
+                <div></div>
+                <div></div>
+                <div></div>
+            </span>
+            <a asp-controller="Home" asp-action="Index" class="navbar-brand">RentCar</a>
+        </div>
+        <div class="auth-container">
+            <a asp-controller="Auth" asp-action="Login" class="btn-primary">Login</a>
+            <a asp-controller="Auth" asp-action="Register" class="btn-primary">Register</a>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebar" class="sidebar">
+        <span class="close-btn" onclick="toggleSidebar()">×</span>
+        <a asp-controller="Home" asp-action="Index">Home</a>
+        <a asp-controller="Rental" asp-action="Index" id="riwayat-nav">Riwayat Penyewaan</a>
+        <a asp-controller="About" asp-action="Index">Kontak Kami</a>
+    </div>
+
+    <div class="container-main">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="container-footer">
+            &copy; 2024 - RentCarApp. Semua Hak Dilindungi.
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/underscore@1.13.7/underscore-umd-min.js
+"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
+<script>
+    function toggleSidebar() {
+        var sidebar = document.getElementById("sidebar");
+        var content = document.getElementById("main-content");
+        sidebar.classList.toggle("open-sidebar");
+        content.classList.toggle("content-shift");
+    }
+
+    $(document).ready(function() {
+        let putReq = function (url, params) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                type: "PUT",
+                url: url,
+                data: JSON.stringify(params),
+                success: function (response) {
+                    resolve(response);
+                },
+                error: function (error) {
+                    reject(error);
+                },
+                contentType: "application/json; charset=utf-8",
+            });
+            });
+        }
+
+        async function logout(url, params) {
+            try {
+                let response = await putReq(url, params);
+                if (response) return response;
+            } catch (error) {
+                alert("Failed to logout");
+                return false;
+            }
+        }
+
+        function checkAuth() {
+            if (localStorage.getItem("custIsAuthenticated")) {
+                $(".auth-container").html(`Hello, ${localStorage.getItem("custName")}
+                <button class="btn btn-primary" id="logout-btn">Logout</button>`);
+            }
+        }
+
+        checkAuth();
+
+        $("#logout-btn").click(async function() {
+            const url = "/Auth/UserLogout";
+            let params = {
+                isAuthenticated: localStorage.getItem("custIsAuthenticated")
+            };
+            
+            let response = await logout(url, params);
+            if (!response) {
+                return;
+            }
+
+            localStorage.clear();
+            alert("Logout successful. You will be redirected to home.")
+            window.location.href = "/Home/Index";
+        });
+
+        $("#riwayat-nav").click(function(event) {
+            if (localStorage.getItem("custIsAuthenticated") == null) {
+                event.preventDefault();
+                alert("You need to login first")
+            }
+        })
+    });
+    
+</script>

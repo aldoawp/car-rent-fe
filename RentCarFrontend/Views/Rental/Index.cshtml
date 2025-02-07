@@ -1,0 +1,116 @@
+@{
+  ViewData["Title"] = "Riwayat Penyewaan";
+}
+
+<div class="rental-history-container">
+    <h2>Mobil yang Pernah Disewa</h2>
+    
+    <table class="rental-history">
+        <thead>
+            <tr>
+                <th>Tanggal Sewa</th>
+                <th>Mobil</th>
+                <th>Harga Sewa per Hari</th>
+                <th>Total Hari</th>
+                <th>Total Harga</th>
+                <th>Status Pembayaran</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(async function() {
+            let getReq = function(url, params) {
+                return new Promise(function (resolve, reject) {
+                    $.ajax({
+                        type: "GET",
+                        url: url,
+                        data: params,
+                        success: function (response) {
+                            resolve(response);
+                        },
+                        error: function (error) {
+                            reject(error);
+                        },
+                        contentType: "application/json"
+                    })
+                })
+            };
+
+            let rentUrl = "/Rental/GetRentHistories";
+            let rentParams = {
+                custID: localStorage.getItem("custID"),
+            }
+            let rentalResponse = await getReq(rentUrl, rentParams);
+            let carUrl = "/Car/GetCarDetail";
+
+            console.log(rentalResponse.payload)
+            let tbody = $(".rental-history tbody");
+            tbody.empty();
+
+            if (rentalResponse && rentalResponse.payload && rentalResponse.payload.length > 0) {
+                const carDetailsPromises = rentalResponse.payload.map(async item => {
+                    // Calculate the total days
+                    const rentalDate = new Date(item.rentalDate);
+                    const returnDate = new Date(item.returnDate);
+                    const totalDays = Math.ceil((returnDate - rentalDate) / (1000 * 60 * 60 * 24)) || 1; // Ensure at least 1 day
+
+                    let carParams = {
+                        carID: item.carID
+                    };
+                    let carResponse = await getReq(carUrl, carParams);
+                    console.log(carResponse);
+
+                    // Return an object with necessary data
+                    return {
+                        rentalDate: formatDate(item.rentalDate),
+                        returnDate: formatDate(item.returnDate),
+                        carName: carResponse.payload ? carResponse.payload.name : "Unknown Car",
+                        pricePerDay: carResponse.payload ? carResponse.payload.pricePerDay : 0, 
+                        totalDays: totalDays,
+                        totalPrice: item.totalPrice,
+                        paymentStatus: item.paymentStatus
+                    };
+                });
+
+                // Wait for all car details to be fetched
+                const carDetails = await Promise.all(carDetailsPromises);
+
+                // Append rows to the table
+                carDetails.forEach(detail => {
+                    let row = `
+                        <tr>
+                            <td>${detail.rentalDate} - ${detail.returnDate}</td>
+                            <td>${detail.carName}</td>
+                            <td>Rp. ${detail.pricePerDay.toLocaleString('id-ID')}</td>
+                            <td>${detail.totalDays}</td>
+                            <td>Rp. ${detail.totalPrice.toLocaleString('id-ID')}</td>
+                            <td><span class="${detail.paymentStatus ? 'paid' : 'unpaid'}">${detail.paymentStatus ? "Sudah Dibayar" : "Belum Dibayar"}</span></td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            } else {
+                tbody.append(`
+                    <tr>
+                        <td colspan="6">Tidak ada riwayat penyewaan.</td>
+                    </tr>
+                `);
+            }
+
+            // Helper function to format date
+            function formatDate(dateString) {
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('id-ID', options);
+            }
+        });
+    </script>
+}

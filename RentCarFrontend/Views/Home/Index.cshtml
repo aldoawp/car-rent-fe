@@ -1,0 +1,205 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="search-container">
+    <h1>Selamat Datang di Rental Mobil Kami</h1>
+    <form id="search-form">
+        <div class="search-form">
+            <div class="form-group">
+                <label for="pickup-date">Pickup Date:</label>
+                <input type="date" id="pickup-date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="return-date">Return Date:</label>
+                <input type="date" id="return-date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="filter-year">Filter Tahun Pembuatan</label>
+                <select id="filter-year">
+                    <option value="0">Semua Tahun</option>
+                </select>
+            </div>
+            <button action="submit" class="search-button" id="search-button-id">Cari</button>
+        </div>
+    </form>
+</div>
+
+<div class="cards-container">
+        <!-- Sort Dropdown -->
+        <div class="sort-container">
+            <label for="sort">Sortir Berdasarkan:</label>
+            <select id="sort">
+                <option value="asc">Harga Terendah - Tertinggi</option>
+                <option value="desc">Harga Tertinggi - Terendah</option>
+            </select>
+        </div>
+
+        <!-- Car Rental Cards -->
+        <div class="card-container" id="card-container-id">
+        </div>
+
+        <div id="pagination-container">
+        </div>
+    </div>
+
+@await Html.PartialAsync("Component/component-car-card")
+
+@section Scripts {
+    <script>
+    $(document).ready(async function() {
+        var app = {};
+
+        app.getReq = function (url, params) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    data: params,
+                    success: function (response) {
+                        resolve(response);
+                    },
+                    error: function (error) {
+                        reject(error);
+                    },
+                    contentType: "application/json"
+                });
+            })
+        }
+
+        async function getCarList(pageNumber, pageContent, sort, year) {
+            const params = {
+                "pageNumber": pageNumber,
+                "pageContent": pageContent,
+                "sort": sort,
+                "year": year,
+            };
+
+            try {
+                let carListResponse = await app.getReq("/Home/GetCar", params);
+                if (carListResponse) {
+                    return carListResponse.payload;
+                }
+            } catch (error) {
+                alert(error);
+                return false;
+            }
+        }
+
+        async function getYears() {
+            try {
+                let yearListResponse = await app.getReq("/Home/GetYears")
+                if (yearListResponse) {
+                    return yearListResponse.payload;
+                }
+            } catch (error) {
+                alert(error);
+                return false;
+            }
+        }
+
+        async function getAllCars(year) {
+            try {
+                let carListResponse = await app.getReq(`/Home/GetAllCars?year=${year}`)
+                if (carListResponse) {
+                    return carListResponse.payload;
+                }
+            } catch (error) {
+                alert(error);
+                return false;
+            }
+        }
+
+        async function initPage() {
+            var yearList = await getYears();
+
+            yearList.forEach(function(item) {
+                $("#filter-year").append(
+                    `<option value="${item.year}">${item.year}</option>`
+                )
+            })
+        }
+
+        await initPage();
+        
+        // Search car function
+        let pageNumber = 1;
+        let pageContent = 6;
+        let pickUpDate;
+        let returnDate;
+        let sort;
+        let year;
+
+        $("#pickup-date").change(function(){
+            pickUpDate = $("#pickup-date").val();
+        })
+        $("#return-date").change(function(){
+            pickUpDate = $("#return-date").val();
+        })
+
+        $("#search-form").submit(async function(event) {
+            event.preventDefault();
+
+            $(".sort-container").css({display: "block"});
+
+            sort = $("#sort").val();
+            year = $("#filter-year").val();
+
+            let carList = await getCarList(pageNumber, pageContent, sort, year);
+            const carCard = _.template(
+                $("#component-car-card").html()
+            );
+            $("#card-container-id").html(
+                carCard({ data: carList })
+            )
+
+            $(".car-detail-button").click(function(event) {
+                if (localStorage.getItem("custIsAuthenticated") == null) {
+                    event.preventDefault();
+                    alert("You need to login first");
+                }
+            });
+
+            // Add pagination pages into the UI
+            let allCarList = await getAllCars(year);
+            let totalPages = Math.ceil(allCarList.length / pageContent)
+            $("#pagination-container").empty();
+            for (let i = 1; i <= totalPages; i++) {
+                $("#pagination-container").append(
+                    `<div class="pagination" id="pagination-${i}">${i}</div>`
+                )
+
+                $(`#pagination-${i}`).click(async function() {
+                    $(`#pagination-${pageNumber}`).removeClass("red-pagination")
+                    $(`#pagination-${i}`).addClass("red-pagination")
+
+                    pageNumber = i;
+                    carList = await getCarList(pageNumber, pageContent, sort, year);
+                    const carCard = _.template(
+                        $("#component-car-card").html()
+                    );
+                    $("#card-container-id").html(
+                        carCard({ data: carList })
+                    );
+                });
+            }
+            $(`#pagination-${pageNumber}`).addClass("red-pagination")
+        });
+
+        $("#sort").change(async function() {
+            sort = $("#sort").val();
+            year = $("#filter-year").val();
+
+            let carList = await getCarList(pageNumber, pageContent, sort, year);
+            const carCard = _.template(
+                $("#component-car-card").html()
+            );
+            $("#card-container-id").html(
+                carCard({ data: carList })
+            )
+        });
+    });
+</script>
+}

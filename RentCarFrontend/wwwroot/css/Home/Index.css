@@ -1,0 +1,171 @@
+.search-container {
+  margin-top: 50px;
+}
+
+.search-container h1 {
+  color: #6d3fa9;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.search-form {
+  background-color: #b3e0ff;
+  padding: 20px;
+  margin: 0 auto;
+  width: 80%;
+  max-width: 800px;
+  border-radius: 15px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  display: inline-block;
+  margin: 0 10px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input, 
+.form-group select {
+  width: 200px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.search-button {
+  padding: 10px 20px;
+  margin-top: 22px;
+  background-color: #ff99cc;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.search-button:hover {
+  background-color: #ff6699;
+}
+
+
+/* Car cards section */
+.cards-container {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Sort Container */
+.sort-container {
+  text-align: right;
+  margin-bottom: 20px;
+  display: none;
+}
+
+label {
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+select {
+  padding: 5px;
+  font-size: 16px;
+}
+
+/* Card Container */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* Card Styles */
+.card {
+  background-color: #d3e7f8;
+  border-radius: 10px;
+  width: 100%;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+}
+
+.card img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.card a {
+  background-color: #ff9f45;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.card a:hover {
+  background-color: #ff7f1c;
+}
+
+/* Pagination */
+#pagination-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  margin-top: 2em;
+  gap: 1em;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 20%;
+  background-color: #b3e0ff;
+  width: 2em;
+  height: 2em;
+}
+
+.red-pagination {
+  background-color: #ff6d6d;
+}
+
+@media screen and (min-width: 0px) {
+  .card-container {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .card-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

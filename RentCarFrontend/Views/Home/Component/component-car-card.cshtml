@@ -1,0 +1,16 @@
+<script type="text/template" id="component-car-card">
+  <% let pickUpDate = $("#pickup-date").val() %>
+  <% let returnDate = $("#return-date").val() %>
+
+  <% if (data.length > 0) { %>
+    <%_.each(data, function(item, index) { %>
+      <div class="card">
+        <img src="https://placehold.co/600x400" alt="Car Image">
+        <h3><%= item.name %></h3>
+        <p>Harga: <%= "Rp. " + item.pricePerDay.toLocaleString('id-ID') %></p>
+        <a id="car-detail-button-<%= item.carID %>" class="car-detail-button" href="/Car?carId=<%= item.carID %>&pickUpDate=<%= pickUpDate %>&returnDate=<%= returnDate %>">Sewa Sekarang</a>
+      </div>
+    <% }); %>
+  <% } %>
+
+</script>

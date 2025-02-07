@@ -1,0 +1,84 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="login-container">
+  <h2>Login ke RentCar</h2>
+  <form id="signin-form">
+    <label for="signin-email">Email</label>
+    <input type="text" id="signin-email" placeholder="Masukkan email Anda" required>
+
+    <label for="signin-password">Password</label>
+    <input type="password" id="signin-password" placeholder="Masukkan password Anda" required>
+
+    <button type="submit">Login</button>
+
+    <p class="register-text">
+      Belum punya akun? <a asp-controller="Auth" asp-action="Register">Registrasi disini</a>
+    </p>
+  </form>
+</div>
+
+@section Scripts 
+{
+  <script>
+      let putReq = function (url, params) {
+      return new Promise(function (resolve, reject) {
+          $.ajax({
+              type: "PUT",
+              url: url,
+              data: JSON.stringify(params),
+              success: function (response) {
+                  resolve(response);
+              },
+              error: function (error) {
+                  reject(error);
+              },
+              contentType: "application/json; charset=utf-8",
+          });
+        });
+      }
+
+
+    async function login(url, params) {
+      try {
+        let response = await putReq(url, params);
+        if (response) return response;
+      } catch (error) {
+        alert("Invalid email or password.");
+        return false;
+      }
+    }
+
+    $("#signin-form").submit(async function(event) {
+      event.preventDefault();
+
+      const email = $("#signin-email").val();
+      const password = $("#signin-password").val();
+
+      const url = "/Auth/UserLogin";
+      let params = {
+        email: email,
+        password: password
+      };
+    
+      let response = await login(url, params);
+      if (!response) {
+        return;
+      }
+
+      let custData = response.payload;
+      alert("Login successful");
+      
+      localStorage.setItem("custID", custData.customerID);
+      localStorage.setItem("custEmail", custData.email);
+      localStorage.setItem("custName", custData.name);
+      localStorage.setItem("custPhoneNumber", custData.phoneNumber);
+      localStorage.setItem("custAddress", custData.address);
+      localStorage.setItem("custDriverLicenseNumber", custData.driverLicenseNumber);
+      localStorage.setItem("custIsAuthenticated", custData.isAuthenticated);
+
+      window.location.href = "/Home/Index";
+    });
+  </script>
+}
